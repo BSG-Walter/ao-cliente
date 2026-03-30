@@ -449,11 +449,12 @@ Public Sub Connect(Optional RemoteHost As String, Optional RemotePort As Integer
     '2) m_strRemoteHost was a hostname, so a resolution was
     '   necessary and it's taking place right now. We leave
     '   silently.
+    
+    Dim strTemp As String
+    Dim lngErrorCode As Long
+    lngAddress = ResolveIfHostnameSync(m_strRemoteHost, strTemp, lngErrorCode)
  
-    If lngAddress <> vbNull Then
-        ConnectToIP lngAddress, 0
-
-    End If
+    ConnectToIP lngAddress, lngErrorCode
  
 End Sub
  

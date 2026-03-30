@@ -375,11 +375,12 @@ Public Sub Connect(ByVal Modo As E_MODO)
     frmConnect.btnConectarse.Enabled = False
         
     'Primero lo cerramos, para evitar errores.
-    If frmMain.Client.State <> (sckClosed Or sckConnecting) Then
+    'Si habia una conexion previa o un intento de conexion, lo abortamos.
+    If frmMain.Client.State <> sckClosed Then
         frmMain.Client.CloseSck
         DoEvents
     End If
-    
+
     EstadoLogin = Modo
 
     'Usamos la API de Windows
