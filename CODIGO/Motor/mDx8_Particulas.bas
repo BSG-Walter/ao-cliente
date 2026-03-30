@@ -276,7 +276,7 @@ Public Function Char_Particle_Group_Remove(ByVal char_index As Integer, _
                                            ByVal stream_type As Long)
 
     '**************************************************************
-    'Author: Augusto José Rando
+    'Author: Augusto JosÃ© Rando
     '**************************************************************
     Dim char_part_index As Integer
 
@@ -477,9 +477,43 @@ Private Sub Particle_Render(ByRef temp_particle As Particle, ByVal screen_x As I
              .alive_counter = .alive_counter - 1
         End If
         
+        Dim PColor(0 To 3) As Long
+        Dim FadeFactor As Single
+        Dim ScaleFactor As Single
+        
         'Draw it
         If .Grh.GrhIndex Then
-            Call Draw_Grh(.Grh, .X + screen_x, .Y + screen_y, 1, rgb_list(), 1, True, .angle)
+            
+            ' Fading Suave (Alpha Fading) y Escala
+            ' Calculamos el factor de vida de la particula entre 0.0 (muerta) y 1.0 (recien nacida)
+            If .alive_counter > 0 And life2 > 0 Then
+                FadeFactor = .alive_counter / life2
+            Else
+                FadeFactor = 1#
+            End If
+            
+            ' Aplicamos el factor de escala dinamico: empieza en 0.2, sube a 1.0 y vuelve a bajar a 0.2
+            ' Usamos una curva simple: Seno o parabola invertida
+            ScaleFactor = 0.5 + (Sin(FadeFactor * 3.14159) * 0.7)
+            If ScaleFactor < 0.1 Then ScaleFactor = 0.1
+            
+            ' Extraemos el RGB base y le aplicamos el Alpha de desvanecimiento
+            Dim FinalAlpha As Long
+            FinalAlpha = 255 * FadeFactor
+            
+            Dim r As Long, g As Long, b As Long
+            
+            ' Desarmar los colores y volver a armarlos con Fade Alpha
+            Dim i As Integer
+            For i = 0 To 3
+                ' El formato D3DColor es ARGB. Para modificar el Alpha tenemos que reensamblar.
+                r = (rgb_list(i) And &HFF0000) \ &H10000
+                g = (rgb_list(i) And &HFF00&) \ &H100&
+                b = (rgb_list(i) And &HFF&)
+                PColor(i) = ARGB(r, g, b, FinalAlpha)
+            Next i
+            
+            Call Draw_Grh(.Grh, .X + screen_x, .Y + screen_y, 1, PColor(), 1, True, .angle, ScaleFactor, ScaleFactor)
         End If
         
     End With
@@ -836,7 +870,7 @@ Private Function Char_Particle_Group_Find(ByVal char_index As Integer, _
                                           ByVal stream_type As Long) As Integer
 
     '*****************************************************************
-    'Author: Augusto José Rando
+    'Author: Augusto JosÃ© Rando
     'Modified: returns slot or -1
     '*****************************************************************
     On Error Resume Next
