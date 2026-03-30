@@ -176,7 +176,14 @@ Private Sub Engine_Render_Text(ByRef Batch As clsBatch, _
             'Loop through the characters
             For J = 1 To Len(tempstr(i))
 
-                Call CopyMemory(TempVA, UseFont.HeaderInfo.CharVA(ascii(J - 1)), 24) 'this number represents the size of "CharVA" struct
+                With UseFont.HeaderInfo.CharVA(ascii(J - 1))
+                    TempVA.W = .W
+                    TempVA.H = .H
+                    TempVA.Tx1 = .Tx1
+                    TempVA.Ty1 = .Ty1
+                    TempVA.Tx2 = .Tx2
+                    TempVA.Ty2 = .Ty2
+                End With
                 
                 TempVA.X = X + Count
                 TempVA.Y = Y + yOffset
@@ -237,21 +244,19 @@ Private Function Engine_GetTextWidth(ByRef UseFont As CustomFont, ByVal Text As 
 'Returns the width of text
 'More info: http://www.vbgore.com/GameClient.TileEngine.Engine_GetTextWidth
 '***************************************************
-Dim i As Integer
-Dim Len_text As Long
-
-    'Make sure we have text
     If LenB(Text) = 0 Then Exit Function
     
-    Len_text = Len(Text)
+    Dim ascii() As Byte
+    Dim i As Long
+    Dim width As Long
     
-    'Loop through the text
-    For i = 1 To Len_text
-        
-        'Add up the stored character widths
-        Engine_GetTextWidth = Engine_GetTextWidth + UseFont.HeaderInfo.CharWidth(Asc(mid$(Text, i, 1)))
-        
+    ascii = StrConv(Text, vbFromUnicode)
+    
+    For i = 0 To UBound(ascii)
+        width = width + UseFont.HeaderInfo.CharWidth(ascii(i))
     Next i
+    
+    Engine_GetTextWidth = width
 
 End Function
 

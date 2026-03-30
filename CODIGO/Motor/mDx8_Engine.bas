@@ -62,6 +62,8 @@ Public Type TLVERTEX
 End Type
 
 Private EndTime As Long
+Private Declare Function QueryPerformanceFrequency Lib "kernel32" (lpFrequency As Currency) As Long
+Private Declare Function QueryPerformanceCounter Lib "kernel32" (lpPerformanceCount As Currency) As Long
 
 Public Sub Engine_DirectX8_Init()
     On Error GoTo EngineHandler:
@@ -361,14 +363,25 @@ Public Sub Engine_Update_FPS()
     '    Wend
     'End If
 
-    If FPSLastCheck + 1000 < GetTickCount() Then
+    ' Use high precision timer for FPS calculation
+    Static EndTime As Currency
+    Static Freq As Currency
+    Dim CurrentTime As Currency
+    
+    If Freq = 0 Then
+        Call QueryPerformanceFrequency(Freq)
+        Call QueryPerformanceCounter(EndTime)
+    End If
+    
+    Call QueryPerformanceCounter(CurrentTime)
+    
+    ' Calculate elapsed time in milliseconds
+    If (CurrentTime - EndTime) / Freq * 1000 >= 1000 Then
         FPS = FramesPerSecCounter
         FramesPerSecCounter = 1
-        FPSLastCheck = GetTickCount()
-    
+        EndTime = CurrentTime
     Else
         FramesPerSecCounter = FramesPerSecCounter + 1
-
     End If
 
 End Sub
